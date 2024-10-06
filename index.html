@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta lang="utf-8"/>
+    <title>Custom Picker Wheel Maker</title>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1 id="site-title">Custom Picker Wheel Maker</h2>
+            <button id="darkToggle" onclick="toggleDarkMode()"></button>
+        </div>
+    </div>
+    <div class="container">
+        <ul class="actions">
+            <li><button onclick="spinAll()">Spin All</button></li
+            ><li><button onclick="addWheel()">Add Wheel</button></li
+            ><li><button onclick="saveToFile()">Save</button></li
+            ><li><button onclick="loadFromFile()">Load</button></li
+            ><li><button onclick="loadDefault()">Reset</button></li>
+        </ul>
+        <div id="wheel-list">
+        </div>
+    </div>
+    <script>
+        var __darkMode = localStorage.getItem("darkMode");
+        if (__darkMode) {
+            document.body.classList.add("dark");
+            document.getElementById("darkToggle").classList.add("dark");
+        }
+    </script>
+    <div style="display:none;"><input type="file" id="data-load" accept=".json" /></div>
+    <script src="./app.js"></script>
+</body>
+</html>

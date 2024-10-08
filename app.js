@@ -73,6 +73,8 @@ function renderWheel(wheelIdx) {
         </div>
         <div class="panel-body">
             <div class="options-list">
+                <h4>Allow Repeat <button class="toggle-switch wheel-repeat-toggle ${(window.wheelList[wheelIdx].allowRepeat ? ' enabled': '')}" data-wheelIdx="${wheelIdx}"></button></h4>
+                <button class="add-option" data-wheelIdx="${wheelIdx}">+</button>
                 ${optionsList}
             </div>
             <div class="wheel-side">
@@ -158,7 +160,7 @@ function spinWheel(wheelIdx, lastWheel) {
     var newResult;
     do {
         newResult = Math.floor(Math.random() * optCount);
-    } while (lastResult == newResult);
+    } while (lastResult == newResult && !window.wheelList[wheelIdx].allowRepeat && optCount > 1);
 
     var spinCount = 360*10 + 360*wheelIdx - (360/optCount*(newResult+1)) - (360/(optCount*2));
     var spinDuration = 3 + wheelIdx/2;
@@ -245,6 +247,48 @@ function reIndexWheelPanel(wheelIdx) {
     document.querySelector('.wheel-panel-' + wheelIdx + ' .wheel-result').setAttribute('data-wheelIdx', wheelIdx);
 }
 
+/**
+ * Add a new option to a given wheel and focus text input to it
+ * @param {int} wheelIdx 
+ */
+function addWheelOption(wheelIdx) {
+    window.wheelList[wheelIdx].options.push("");
+
+    // add new input for the value
+    var newOption = document.createElement('div');
+    newOption.classList.add('option-input');
+    
+    var optInput = document.createElement('input');
+    optInput.setAttribute('type', 'text');
+    optInput.classList.add('picker-option');
+    optInput.setAttribute('data-wheelidx', wheelIdx);
+    optInput.setAttribute('data-optIdx', window.wheelList[wheelIdx].options.length - 1);
+    
+    var optButton = document.createElement('button');
+    optButton.classList.add('option-remove');
+    optButton.innerHTML = '&#x1F5D9;';            
+
+    newOption.appendChild(optInput);
+    newOption.appendChild(optButton);
+    document.querySelector('.wheel-panel-' + wheelIdx + ' .options-list').appendChild(newOption);
+
+
+    // add new petal
+    var newPetal = document.createElement('div');
+    newPetal.classList.add('spinner-petal');
+    newPetal.classList.add('petal-' + wheelIdx + '-' + (window.wheelList[wheelIdx].options.length - 1));
+
+    var petalLabel = document.createElement('div');
+    petalLabel.classList.add('petal-name');
+
+    newPetal.appendChild(petalLabel);
+    document.querySelector('.wheel-panel-' + wheelIdx + ' .spinner-element').appendChild(newPetal);
+
+    recalculatePetalTransform(wheelIdx);
+    
+    optInput.focus();
+}
+
 // Run default setup
 loadDefault();
 
@@ -255,7 +299,7 @@ loadDefault();
  */
 document.addEventListener('click', function(e) {
     // remove option from target wheel
-    if (e.target.className == 'option-remove') {
+    if (e.target.classList.contains('option-remove')) {
         var wheelIdx = parseInt(e.target.previousSibling.getAttribute('data-wheelIdx'));
         var optIdx = parseInt(e.target.previousSibling.getAttribute('data-optIdx'));
 
@@ -275,12 +319,22 @@ document.addEventListener('click', function(e) {
         return;
     }
     // remove a wheel
-    if (e.target.className == 'remove-wheel') {
+    if (e.target.classList.contains('remove-wheel')) {
         removeWheel(parseInt(e.target.getAttribute('data-wheelIdx')));
     }
     // spin a wheel
-    if (e.target.className == 'wheel-result' && !window.isSpinning) {
+    if (e.target.classList.contains('wheel-result') && !window.isSpinning) {
         spinWheel(parseInt(e.target.getAttribute('data-wheelIdx')), true);
+    }
+    // toggle if wheel allows same result twice in a row
+    if (e.target.classList.contains('wheel-repeat-toggle')) {
+        var wheelIdx = parseInt(e.target.getAttribute('data-wheelIdx'));
+        window.wheelList[wheelIdx].allowRepeat = !window.wheelList[wheelIdx].allowRepeat;
+        e.target.classList.toggle('enabled', window.wheelList[wheelIdx].allowRepeat);
+    }
+    // add option to a wheel
+    if (e.target.classList.contains('add-option')) {
+        addWheelOption(parseInt(e.target.getAttribute('data-wheelIdx')));
     }
 });
 document.addEventListener('keyup', function(e) {
@@ -292,41 +346,7 @@ document.addEventListener('keyup', function(e) {
         optIdx = parseInt(e.target.getAttribute("data-optIdx"));
         // if Enter, add new option
         if (e.key == 'Enter') {
-            window.wheelList[wheelIdx].options.push("");
-
-            // add new input for the value
-            var newOption = document.createElement('div');
-            newOption.classList.add('option-input');
-            
-            var optInput = document.createElement('input');
-            optInput.setAttribute('type', 'text');
-            optInput.classList.add('picker-option');
-            optInput.setAttribute('data-wheelidx', wheelIdx);
-            optInput.setAttribute('data-optIdx', window.wheelList[wheelIdx].options.length - 1);
-            
-            var optButton = document.createElement('button');
-            optButton.classList.add('option-remove');
-            optButton.innerHTML = '&#x1F5D9;';            
-
-            newOption.appendChild(optInput);
-            newOption.appendChild(optButton);
-            document.querySelector('.wheel-panel-' + wheelIdx + ' .options-list').appendChild(newOption);
-
-
-            // add new petal
-            var newPetal = document.createElement('div');
-            newPetal.classList.add('spinner-petal');
-            newPetal.classList.add('petal-' + wheelIdx + '-' + (window.wheelList[wheelIdx].options.length - 1));
-
-            var petalLabel = document.createElement('div');
-            petalLabel.classList.add('petal-name');
-
-            newPetal.appendChild(petalLabel);
-            document.querySelector('.wheel-panel-' + wheelIdx + ' .spinner-element').appendChild(newPetal);
-
-            recalculatePetalTransform(wheelIdx);
-            
-            optInput.focus();
+            addWheelOption(wheelIdx);
             return;
         }
         window.wheelList[wheelIdx].options[optIdx] = e.target.value;

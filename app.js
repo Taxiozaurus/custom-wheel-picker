@@ -125,6 +125,7 @@ function loadDefault() {
     window.wheelList = [
         {
             name: "Coin Flip",
+            allowRepeat: true,
             options: [
                 "Heads",
                 "Tails",

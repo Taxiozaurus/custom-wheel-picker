@@ -165,6 +165,7 @@ body {
     position: relative;
 }
 .options-list .add-option {
+    cursor: pointer;
     position: absolute;
     bottom: 0.5rem;
     font-weight: bold;

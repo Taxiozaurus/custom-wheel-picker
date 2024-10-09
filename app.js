@@ -1,6 +1,14 @@
 window.wheelList = [];
 window.isSpinning = false;
 var wheelWrapper = document.getElementById("wheel-list");
+var defaultWheel = {
+    name: "Coin Flip",
+    allowRepeat: true,
+    options: [
+        "Heads",
+        "Tails",
+    ]
+};
 
 /**
  * Toggles relevant classes on body and toggle element to use dark mode CSS vars
@@ -122,16 +130,7 @@ function recalculatePetalTransform(wheelIdx) {
  * Resets the wheel list and loads default config
  */
 function loadDefault() {
-    window.wheelList = [
-        {
-            name: "Coin Flip",
-            allowRepeat: true,
-            options: [
-                "Heads",
-                "Tails",
-            ]
-        },
-    ];
+    window.wheelList = [JSON.parse(JSON.stringify(defaultWheel))];
     wheelWrapper.innerHTML = '';
     renderWheel(0);
 }
@@ -183,13 +182,7 @@ function spinWheel(wheelIdx, lastWheel) {
  * 
  */
 function addWheel() {
-    window.wheelList.push({
-        name: "Coin Flip",
-        options: [
-            "Heads",
-            "Tails",
-        ]
-    });
+    window.wheelList.push(JSON.parse(JSON.stringify(defaultWheel)));
     renderWheel(window.wheelList.length - 1);
 }
 

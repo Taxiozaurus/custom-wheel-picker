@@ -149,6 +149,10 @@ body {
 .panel-header button:hover {
     text-shadow: var(--color-shadow) 0 0 0.5rem;
 }
+.wheel-name-header {
+    min-width: 3rem;
+}
+
 .panel-body {
     display: grid;
     column-gap: 1rem;

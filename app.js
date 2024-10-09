@@ -75,9 +75,8 @@ function renderWheel(wheelIdx) {
     wheelPanel.classList.add('wheel-panel-' + wheelIdx);
     wheelPanel.innerHTML = `
         <div class="panel-header">
-            <h3>${window.wheelList[wheelIdx].name}</h3>
+            <h3 contenteditable="true" class="wheel-name-header" data-wheelIdx="${wheelIdx}">${window.wheelList[wheelIdx].name}</h3>
             <button class="remove-wheel" data-wheelIdx="${wheelIdx}">&#x1F5D9;</button>
-            <button class="edit-wheel-name" data-wheelIdx="${wheelIdx}">&#x270E;</button>
         </div>
         <div class="panel-body">
             <div class="options-list">
@@ -163,7 +162,7 @@ function spinWheel(wheelIdx, lastWheel) {
     } while (lastResult == newResult && !window.wheelList[wheelIdx].allowRepeat && optCount > 1);
 
     var spinCount = 360*10 + 360*wheelIdx - (360/optCount*(newResult+1)) - (360/(optCount*2));
-    var spinDuration = 3 + wheelIdx/2;
+    var spinDuration = 3 + wheelIdx/2; // 3 seconds + 0.5s per wheel in list
 
     var spinnerWrapper = document.querySelector('.wheel-panel-' + wheelIdx + ' .spinner-wrapper');
     spinnerWrapper.setAttribute('style', `transition: transform ${spinDuration}s; transform: rotate(${spinCount}deg);`);
@@ -179,7 +178,7 @@ function spinWheel(wheelIdx, lastWheel) {
 }
 
 /**
- * 
+ * Add new default wheel to wheel list and render it
  */
 function addWheel() {
     window.wheelList.push(JSON.parse(JSON.stringify(defaultWheel)));
@@ -237,7 +236,7 @@ function reIndexWheelPanel(wheelIdx) {
         curPetal.className = 'spinner-petal petal-' + wheelIdx + '-' + curIdx;
     });
     document.querySelector('.wheel-panel-' + wheelIdx + ' .remove-wheel').setAttribute('data-wheelIdx', wheelIdx);
-    document.querySelector('.wheel-panel-' + wheelIdx + ' .edit-wheel-name').setAttribute('data-wheelIdx', wheelIdx);
+    document.querySelector('.wheel-panel-' + wheelIdx + ' .wheel-name-header').setAttribute('data-wheelIdx', wheelIdx);
     document.querySelector('.wheel-panel-' + wheelIdx + ' .wheel-result').setAttribute('data-wheelIdx', wheelIdx);
 }
 
@@ -292,10 +291,12 @@ loadDefault();
  * 
  */
 document.addEventListener('click', function(e) {
+    var wheelIdx;
+    var optIdx;
     // remove option from target wheel
     if (e.target.classList.contains('option-remove')) {
-        var wheelIdx = parseInt(e.target.previousSibling.getAttribute('data-wheelIdx'));
-        var optIdx = parseInt(e.target.previousSibling.getAttribute('data-optIdx'));
+        wheelIdx = parseInt(e.target.previousSibling.getAttribute('data-wheelIdx'));
+        optIdx = parseInt(e.target.previousSibling.getAttribute('data-optIdx'));
 
         // remove the option and the petal
         window.wheelList[wheelIdx].options.splice(optIdx, 1);
@@ -314,28 +315,31 @@ document.addEventListener('click', function(e) {
     }
     // remove a wheel
     if (e.target.classList.contains('remove-wheel')) {
-        removeWheel(parseInt(e.target.getAttribute('data-wheelIdx')));
+        wheelIdx = parseInt(e.target.getAttribute('data-wheelIdx'));
+        removeWheel(wheelIdx);
     }
     // spin a wheel
     if (e.target.classList.contains('wheel-result') && !window.isSpinning) {
-        spinWheel(parseInt(e.target.getAttribute('data-wheelIdx')), true);
+        wheelIdx = parseInt(e.target.getAttribute('data-wheelIdx'));
+        spinWheel(wheelIdx, true);
     }
     // toggle if wheel allows same result twice in a row
     if (e.target.classList.contains('wheel-repeat-toggle')) {
-        var wheelIdx = parseInt(e.target.getAttribute('data-wheelIdx'));
+        wheelIdx = parseInt(e.target.getAttribute('data-wheelIdx'));
         window.wheelList[wheelIdx].allowRepeat = !window.wheelList[wheelIdx].allowRepeat;
         e.target.classList.toggle('enabled', window.wheelList[wheelIdx].allowRepeat);
     }
     // add option to a wheel
     if (e.target.classList.contains('add-option')) {
-        addWheelOption(parseInt(e.target.getAttribute('data-wheelIdx')));
+        wheelIdx = parseInt(e.target.getAttribute('data-wheelIdx'));
+        addWheelOption(wheelIdx);
     }
 });
 document.addEventListener('keyup', function(e) {
     var wheelIdx;
     var optIdx;
     // update existing option or add new if enter key is pressed
-    if (e.target.className == 'picker-option') {
+    if (e.target.classList.contains('picker-option')) {
         wheelIdx = parseInt(e.target.getAttribute("data-wheelIdx"));
         optIdx = parseInt(e.target.getAttribute("data-optIdx"));
         // if Enter, add new option
@@ -345,6 +349,10 @@ document.addEventListener('keyup', function(e) {
         }
         window.wheelList[wheelIdx].options[optIdx] = e.target.value;
         document.querySelector(".petal-" + wheelIdx + "-" + optIdx + " .petal-name").innerHTML = e.target.value;
+    }
+    if (e.target.classList.contains('wheel-name-header')) {
+        wheelIdx = parseInt(e.target.getAttribute("data-wheelIdx"));
+        window.wheelList[wheelIdx].name = e.target.innerText;
     }
 });
 document.getElementById('data-load').addEventListener('change', function(e) {

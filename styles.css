@@ -329,6 +329,7 @@ body {
         width: 100%;
         columns: 2 auto;
         column-gap: 2rem;
+        padding-bottom: 4rem;
     }
     .panel-body {
         grid-template-columns: 1fr 2fr;
